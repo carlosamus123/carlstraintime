@@ -1,24 +1,19 @@
-FROM node:18
+FROM node:18-alpine
 
-# Set working directory
 WORKDIR /app
 
-# Install required system dependencies (fixed)
-RUN apt-get update && \
-    apt-get install -y python3 make g++ && \
-    rm -rf /var/lib/apt/lists/*
+# Install build tools (Alpine version)
+RUN apk add --no-cache python3 make g++
 
-# Copy only package files first (better caching)
+# Copy dependency files
 COPY package*.json ./
 
 # Install dependencies
 RUN npm install --legacy-peer-deps
 
-# Copy rest of the app
+# Copy rest of app
 COPY . .
 
-# Expose app port
 EXPOSE 8080
 
-# Start the app
 CMD ["npm", "start"]
