@@ -1,19 +1,27 @@
-FROM node:18-alpine
+# Use the .NET 8 SDK (build stage)
+FROM mcr.microsoft.com/dotnet/sdk:8.0 AS build
+WORKDIR /src
 
-WORKDIR /app
-
-# Install build tools (Alpine version)
-RUN apk add --no-cache python3 make g++
-
-# Copy dependency files
-COPY package*.json ./
-
-# Install dependencies
-RUN npm install --legacy-peer-deps
-
-# Copy rest of app
+# Copy the solution and project files
+COPY Huxley2/*.csproj Huxley2/
+COPY Huxley2Tests/*.csproj Huxley2Tests/
 COPY . .
 
-EXPOSE 8080
+# Restore dependencies
+RUN dotnet restore Huxley2/Huxley2.csproj
 
-CMD ["npm", "start"]
+# Build the project
+RUN dotnet publish Huxley2/Huxley2.csproj -c Release -o /app/publish
+
+# Final stage: runtime image
+FROM mcr.microsoft.com/dotnet/aspnet:8.0
+WORKDIR /app
+
+# Copy the published output
+COPY --from=build /app/publish .
+
+# Expose the port your app uses
+EXPOSE 8081
+
+# Run the .NET app
+ENTRYPOINT ["dotnet", "Huxley2.dll"]
