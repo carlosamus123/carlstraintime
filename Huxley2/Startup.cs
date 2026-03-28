@@ -88,7 +88,10 @@ namespace Huxley2
             // The `Access-Control-Allow-Origin` header will not be added to normal GET responses
             // An `Origin` header must be on the request (for a different domain) for CORS to run
             // https://docs.microsoft.com/en-us/aspnet/core/security/cors
-            app.UseCors(config => config.AllowAnyOrigin());
+            app.UseCors(config => config
+                .AllowAnyOrigin()
+                .AllowAnyMethod()
+                .AllowAnyHeader());
 
             app.UseEndpoints(endpoints =>
             {
